@@ -14,6 +14,7 @@ from django.views.generic.edit import FormView
 from app.members.models import Category, Member
 from app.members.forms import MemberForm, UserForm
 from app.authemail.forms import RegisterForm
+from app.core.mail import send_email
 
 import json
 
@@ -40,7 +41,11 @@ class MemberListView(ListView):
         if self.category:
             queryset = queryset.filter(category__id=self.category)
 
-        self.queryset = queryset.select_related("category", "user", "organization")
+        self.queryset = queryset.select_related(
+            "category",
+            "user",
+            "organization"
+        )
 
         return super(MemberListView, self).get(request, args, kwargs)
 
@@ -65,8 +70,15 @@ class SignupView(FormView):
             username=self.request.POST['email'],
             password=self.request.POST['password1'])
         login(self.request, user)
-        messages.success(self.request, _('You\'re already registered! Complete your details to proceed\
-                                         with the registration in the pool! '))
+
+        subject = _('Welcome to Python Brazil Association!')
+        template_name = 'members/member_signup_email.html'
+        send_email(subject, template_name, {'user': user}, [user.username])
+
+        messages.success(
+            self.request,
+            _('You\'re already registered! Complete your details to proceed\
+              with the registration in the pool! '))
         return super(SignupView, self).form_valid(form)
 
     def form_invalid(self, form):
@@ -86,12 +98,15 @@ def member_form(request):
         if member_form.is_valid() and user_form.is_valid():
             member_form.save(user=request.user)
             user_form.save()
-            messages.add_message(request, messages.INFO, _('Your data was updated successfully'))
+            messages.add_message(
+                request,
+                messages.INFO, _('Your data was updated successfully'))
             return HttpResponseRedirect(reverse('members-dashboard'))
         else:
             messages.add_message(
                 request, messages.ERROR,
-                _('An error occurred while trying to save your data. check the form below. '))
+                _('An error occurred while trying to save your data. \
+                  check the form below. '))
 
     return render(
         request,
@@ -103,7 +118,9 @@ def member_form(request):
 
 
 def member_json(request):
-    data = serializers.serialize('json', Member.objects.values('user', 'category' 'mailing'))
+    data = serializers.serialize(
+        'json',
+        Member.objects.values('user', 'category' 'mailing'))
     return JsonResponse(data)
 
 def _retrieve_parameters(request, parameters_dict):
@@ -123,7 +140,8 @@ def _search_member(params):
     member = Member.objects.filter(**params)
 
     if member:
-        days_to_next_payment = member[0].get_days_to_next_payment(member[0].get_last_payment())
+        days_to_next_payment = member[0].get_days_to_next_payment(
+            member[0].get_last_payment())
         if days_to_next_payment > 0:
             result = u'active'
         else:
@@ -142,7 +160,8 @@ def member_status(request):
     params = _retrieve_parameters(request, valid_parameters)
 
     if params == {}:
-        error_message = u'Could not find any valid parameters. Options: %s' % valid_parameters.keys()
+        error_message = u'Could not find any valid parameters. \
+            Options: %s' % valid_parameters.keys()
         response = {u'error': error_message}
     else:
         response = _search_member(params)
@@ -155,7 +174,9 @@ def dashboard(request):
     try:
         payment_results = request.user.member.get_payment_check_list()
     except Member.DoesNotExist:
-        messages.add_message(request, messages.INFO, _('To access the dashboard, you need to complete your data'))
+        messages.add_message(
+            request, messages.INFO,
+            _('To access the dashboard, you need to complete your data'))
         return HttpResponseRedirect(reverse('members-form'))
 
     return render(

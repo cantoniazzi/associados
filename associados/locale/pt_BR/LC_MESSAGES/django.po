@@ -211,7 +211,13 @@ msgstr "Inscreva-se"
 msgid "Signup"
 msgstr "Registrar"
 
-#: app/members/views.py:67
+#: app/members/views.py:70
+msgid ""
+"Welcome to Python Brazil Association!"
+msgstr ""
+"Seja bem vindo a associação Python Brasil!"
+
+#: app/members/views.py:74
 msgid ""
 "You're already registered! Complete your details to "
 "proceed                                         with the registration in the "
@@ -220,15 +226,15 @@ msgstr ""
 "Você está cadastrado! Complete seus dados para prosseguir com o registro na "
 "associação!"
 
-#: app/members/views.py:72
+#: app/members/views.py:79
 msgid "There was an error register"
 msgstr "Houve um erro ao cadastrar-se"
 
-#: app/members/views.py:88
+#: app/members/views.py:95
 msgid "Your data was updated successfully"
 msgstr "Seus dados foram atualizados com sucesso"
 
-#: app/members/views.py:91
+#: app/members/views.py:100
 msgid ""
 "An error occurred while trying to save your data. check the form below. "
 msgstr "Ocorreu um erro ao tentar salvar seus dados. verifique o form abaixo."
